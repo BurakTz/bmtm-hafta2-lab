@@ -1,5 +1,5 @@
 # 🧪 BMTM Hafta 2 — Test Otomasyonu Lab Projesi
-
+Burak Tuzcu - 170423042
 
 **Bulut Mimarilerinde Test Muhendisligi**  
 Busra Ayaksiz | 2025–26 Bahar Donemi | Marmara Universitesi
@@ -464,5 +464,3 @@ pytest tests/unit/ tests/integration/ --cov=src --cov-report=html
 ---
 
 *Busra Ayaksiz — Bulut Mimarilerinde Test Muhendisligi — 2025-26 Bahar*
-
-Burak Tuzcu
