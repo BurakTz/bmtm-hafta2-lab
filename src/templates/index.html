@@ -1,0 +1,143 @@
+<!-- templates/index.html -->
+<!--
+BMTM Hafta 2 — Calculator Web UI
+Playwright E2E testleri bu arayuz uzerinden yapilacaktir.
+-->
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMTM Calculator</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .calculator { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 32px; width: 400px; }
+        h1 { color: #2d3e50; margin-bottom: 24px; text-align: center; font-size: 24px; }
+        .input-group { margin-bottom: 16px; }
+        label { display: block; color: #3a4b5c; font-size: 14px; margin-bottom: 4px; font-weight: 600; }
+        input, select { width: 100%; padding: 10px 12px; border: 2px solid #dce8ec; border-radius: 8px; font-size: 16px; transition: border-color 0.2s; }
+        input:focus, select:focus { outline: none; border-color: #0e8696; }
+        button { width: 100%; padding: 12px; background: #0e8696; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #0a6e7c; }
+        .result-box { margin-top: 20px; padding: 16px; background: #e8f5f7; border-radius: 8px; text-align: center; display: none; }
+        .result-box.visible { display: block; }
+        .result-box.error { background: #fef2f2; }
+        #result { font-size: 28px; font-weight: 700; color: #0e8696; }
+        .result-box.error #result { color: #ef4444; }
+        .result-label { font-size: 12px; color: #6b7b8d; margin-bottom: 4px; }
+        .history { margin-top: 20px; }
+        .history h3 { color: #2d3e50; font-size: 14px; margin-bottom: 8px; }
+        .history-list { max-height: 150px; overflow-y: auto; }
+        .history-item { padding: 6px 10px; background: #f5f9fa; border-radius: 4px; margin-bottom: 4px; font-size: 13px; color: #3a4b5c; }
+        .clear-btn { background: #ef4444; margin-top: 8px; padding: 8px; font-size: 13px; }
+        .clear-btn:hover { background: #dc2626; }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1 data-testid="title">🧮 BMTM Calculator</h1>
+
+        <div class="input-group">
+            <label for="number-a">Birinci Sayi (A)</label>
+            <input type="number" id="number-a" data-testid="input-a" placeholder="Sayi girin..." step="any">
+        </div>
+
+        <div class="input-group">
+            <label for="operation">Islem</label>
+            <select id="operation" data-testid="operation-select">
+                <option value="add">Toplama (+)</option>
+                <option value="subtract">Cikarma (−)</option>
+                <option value="multiply">Carpma (×)</option>
+                <option value="divide">Bolme (÷)</option>
+                <option value="power">Us Alma (^)</option>
+                <option value="percentage">Yuzde (%)</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="number-b">Ikinci Sayi (B)</label>
+            <input type="number" id="number-b" data-testid="input-b" placeholder="Sayi girin..." step="any">
+        </div>
+
+        <button id="calculate-btn" data-testid="calculate-btn">Hesapla</button>
+
+        <div class="result-box" id="result-box" data-testid="result-box">
+            <div class="result-label">Sonuc</div>
+            <div id="result" data-testid="result-value"></div>
+        </div>
+
+        <div class="history">
+            <h3>Islem Gecmisi</h3>
+            <div class="history-list" id="history-list" data-testid="history-list"></div>
+            <button class="clear-btn" id="clear-btn" data-testid="clear-history-btn">Gecmisi Temizle</button>
+        </div>
+    </div>
+
+    <script>
+        const history = [];
+        const opSymbols = { add: '+', subtract: '−', multiply: '×', divide: '÷', power: '^', percentage: '%' };
+
+        document.getElementById('calculate-btn').addEventListener('click', () => {
+            const a = parseFloat(document.getElementById('number-a').value);
+            const b = parseFloat(document.getElementById('number-b').value);
+            const op = document.getElementById('operation').value;
+            const resultBox = document.getElementById('result-box');
+            const resultEl = document.getElementById('result');
+
+            resultBox.classList.remove('error');
+
+            if (isNaN(a) || isNaN(b)) {
+                resultBox.classList.add('visible', 'error');
+                resultEl.textContent = 'Lutfen gecerli sayi girin!';
+                return;
+            }
+
+            let result;
+            try {
+                switch(op) {
+                    case 'add': result = a + b; break;
+                    case 'subtract': result = a - b; break;
+                    case 'multiply': result = a * b; break;
+                    case 'divide':
+                        if (b === 0) throw new Error('Sifira bolme hatasi!');
+                        result = a / b; break;
+                    case 'power': result = Math.pow(a, b); break;
+                    case 'percentage':
+                        if (b < 0) throw new Error('Yuzde orani negatif olamaz!');
+                        result = a * b / 100; break;
+                }
+
+                // Uzun ondaliklari yuvarla
+                if (!Number.isInteger(result)) {
+                    result = Math.round(result * 1e10) / 1e10;
+                }
+
+                resultBox.classList.add('visible');
+                resultBox.classList.remove('error');
+                resultEl.textContent = result;
+
+                // Gecmise ekle
+                const entry = `${a} ${opSymbols[op]} ${b} = ${result}`;
+                history.unshift(entry);
+                renderHistory();
+
+            } catch (e) {
+                resultBox.classList.add('visible', 'error');
+                resultEl.textContent = e.message;
+            }
+        });
+
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            history.length = 0;
+            renderHistory();
+            document.getElementById('result-box').classList.remove('visible');
+        });
+
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            list.innerHTML = history.map(h => `<div class="history-item" data-testid="history-item">${h}</div>`).join('');
+        }
+    </script>
+</body>
+</html>

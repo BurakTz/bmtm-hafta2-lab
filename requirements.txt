@@ -1,0 +1,26 @@
+# requirements.txt
+# ═══════════════════════════════════════════
+# BMTM Hafta 2 — Lab Bagimliliklari
+# ═══════════════════════════════════════════
+# Kurulum: pip install -r requirements.txt
+
+# Test Framework
+pytest>=7.0
+
+# Coverage
+pytest-cov>=4.0
+
+# HTML Test Raporu
+pytest-html>=4.0
+
+# Web Framework (Integration testler icin)
+flask>=3.0
+
+# E2E Test (Playwright)
+pytest-playwright>=0.4.0
+
+# Test Doubles (Mock/Stub/Spy lab icin)
+pytest-mock>=3.0
+
+# Paralel Test Calistirma (opsiyonel)
+pytest-xdist>=3.0
