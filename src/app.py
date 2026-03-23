@@ -75,7 +75,9 @@ def calculate():
             a = data.get("a")
             if a is None:
                 return jsonify({"error": "'a' field is required"}), 400
-            result = calc.factorial(int(a))
+            if not isinstance(a, int):
+                raise TypeError("Factorial only works with integers!")
+            result = calc.factorial(a)
 
         else:
             a = data.get("a")

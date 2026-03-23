@@ -41,3 +41,19 @@ class TestFactorialEndpoint:
         response = client.post("/api/calculate", json=payload)
         assert response.status_code == 200
         assert response.json["result"] == 1
+
+    def test_factorial_negative_returns_422(self, client):
+        payload = {"operation": "factorial", "a": -1, "b": 0}
+        response = client.post("/api/calculate", json=payload)
+        assert response.status_code == 422
+
+    def test_factorial_float_returns_422(self, client):
+        payload = {"operation": "factorial", "a": 2.5, "b": 0}
+        response = client.post("/api/calculate", json=payload)
+        assert response.status_code == 422
+
+    def test_api_continues_after_error(self, client):
+        client.post("/api/calculate", json={"operation": "factorial", "a": -1, "b": 0})
+        response = client.post("/api/calculate", json={"operation": "factorial", "a": 5, "b": 0})
+        assert response.status_code == 200
+        assert response.json["result"] == 120
